@@ -3,48 +3,180 @@
 
 <head>
    <meta charset="UTF-8">
-   <title>Airports in U.S (2012)</title>
+   <title>final</title>
+   <link rel="stylesheet" href="css/main.css">
    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />
    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
 
-   <style>
-      html,
-      body,
-      #map {
-         width: 100%;
-         height: 100%;
-         margin: 0;
-         background: #fff;
-      }
 
 
-   </style>
+   <script src="js/d3.js"></script>
+   <script src="js/c3.min.js"></script>
    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.3.4/chroma.min.js"></script>
+   <script src="js/leaflet-button-control.js"></script>
+
 
 
 </head>
 
 <body>
-   <!-- Our web map and content will go here -->
-   <div id="map"></div>
+
+   <!-- sidebar -->
+<div id="info">
+
+   <div id="title">
+      Cell Tower in Washington - Year 2010
+      <span><a href="https://twitter.com/UW" target="_blank"><i class="fa fa-twitter-square"></i></a></span>
+      <span><a href="https://github.com/jakobzhao/geog458" target="_blank"><i class="fa fa-github-square"></i></a></span>
+    </div>
+    <p id="placename">Washington</p>
+    <div id="count" class="card">
+      <h5 id="desc"> # Cell Tower in the selected county</h5>
+      <p id="county-count">341</p>
+    </div>
+    <div id="county-chart"></div>
+    <div id="footer"></div>
+
+</div>
+
+<div id="map"></div>
+<div class="leaflet-bottom leaflet-right"
+      style="padding-right: 15px; position:absolute; padding-bottom:20px;">
+            <input type="button" id="highway" value="Highway" onclick="highwayChange()" class="btnStyle span3 leaflet-control" />
+            <input type="button" id="Btn2" value="Parks" onclick="parksChange()" class="btnStyle span3 leaflet-control" />
+            <input type="button" id="Btn3" value="Btn3" onclick="" class="btnStyle span3 leaflet-control" />
+        </div>
    <script>
       // Create a map object.
+
+      var checkHighway = 0;
+      function highwayChange(){
+         if(checkHighway == 0){
+            checkHighway = checkHighway + 1;
+            highwaysLayer.addTo(mymap);
+            console.log(checkHighway);
+         }else if(checkHighway == 1){
+            console.log("remove!!!");
+            checkHighway = checkHighway - 1;
+            mymap.removeLayer(highwaysLayer);
+         }
+      };
+
+
+      var checkPark = 0;
+      function parksChange(){
+         if(checkPark == 0){
+            checkPark = checkPark + 1;
+            parksLayer.addTo(mymap);
+         }else if(checkPark == 1){
+            console.log("remove!!!");
+            checkPark = checkPark - 1;
+            mymap.removeLayer(parksLayer);
+         }
+      };
+
+
       var mymap = L.map('map', {
-         center: [47.7511, -120.7401],
-         zoom: 7,
-         maxZoom: 10,
-         minZoom: 3,
-         detectRetina: true
+        center: [47.33, -121.93],
+        zoom: 8,
+        maxZoom: 10,
+        minZoom: 3,
+        zoomControl: false,
+        detectRetina: true
       });
 
+      new L.Control.Zoom({
+         position: 'topright'
+      }).addTo(mymap);
       // Add a base map.
+
+
+
+
       L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png').addTo(mymap);
-      L.control.mousePosition(mymap).addTo(mymap);
+
+      var countiesLayer = null,
+        bchart = null,
+        counties = {};
+
+
+        function style(feature) {
+          return {
+             // fillColor: setColor(feature.properties.count),
+             fillOpacity: 0.4,
+             weight: 2,
+             opacity: 1,
+             color: '#b4b4b4',
+             dashArray: '4'
+          };
+       }
+
+
+      highwaysLayer = null;
+      parksLayers = null;
+      Promise.all([d3.json("assets/county_bound.geojson"), d3.json("assets/state_highway.geojson"), d3.json("assets/parks_recreational.geojson")]).then(function(datasets) {
+        countiesLayer = L.geoJSON(datasets[0], {
+         onEachFeature: onEachFeature,
+         style: style
+        }).addTo(mymap);
+        highwaysLayer = L.geoJSON(datasets[1], {style:
+           {fillOpacity: 0.6,
+           weight: 4,
+           opacity: 1,
+           color: '#ffffcc'}});
+        parksLayer = L.geoJSON(datasets[2]);
+      });
+
+      Promise.all([$.getJSON("assets/county_bound.geojson", "assets/state_highway.geojson", "assets/parks_recreational.geojson")]).then(function(datasets) {
+      });
+      //boundaries = L.geoJson.ajax("assets/county_bound.geojson").addTo(mymap)
+
+
+      // below three functions changes maps tyle
+      function onEachFeature(feature, layer) {
+        layer.on({
+          mouseover: highlightFeature,
+          click: clickFeature,
+          mouseout: resetHighlight
+        });
+      }
+
+// 6.3 this function works when the mouse hovers over on a map feature.
+      function highlightFeature(e) {
+        // e indicates the current event
+        var feature = e.target; //the target capture the object which the event associates with
+        console.log("hover on ");
+        feature.setStyle({
+          weight: 2,
+          opacity: 0.8,
+          color: '#e3e3e3',
+          fillColor: '#00ffd9',
+          fillOpacity: 0.1
+        });
+      }
+
+      function clickFeature(e) {
+        L.DomEvent.stopPropagation(e);
+        $("#placename").text(e.target.feature.properties.JURISDIC_3 + " County");
+      }
+
+      function resetHighlight(e) {
+        countiesLayer.resetStyle(e.target);
+      }
+
+      // 6.6 bind the onMapClick function to the mymap object.
+      mymap.on('click', onMapClick);
+      // when click on any place on the map expect the counties layer, the text on the sidebar will be reset to the total number of WA.
+      function onMapClick(e) {
+        $("#placename").text("Washington");
+        $("#county-count").text("341");
+      }
+
 
 
    </script>
