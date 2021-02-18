@@ -30,14 +30,15 @@
 <div id="info">
 
    <div id="title">
-      Cell Tower in Washington - Year 2010
+      Washington counties guildlines
       <span><a href="https://twitter.com/UW" target="_blank"><i class="fa fa-twitter-square"></i></a></span>
       <span><a href="https://github.com/jakobzhao/geog458" target="_blank"><i class="fa fa-github-square"></i></a></span>
     </div>
-    <p id="placename">Washington</p>
+    <p id="placename">Washington State</p>
     <div id="count" class="card">
-      <h5 id="desc"> # Cell Tower in the selected county</h5>
-      <p id="county-count">341</p>
+      <!-- <h5 id="desc"> <iframe src="https://access.wa.gov/" style="height:400px;width:500px; border:none;" title="description"></h5> -->
+      <h5 id="desc"> State of Washington </h5>
+      <p id="county-count"></p>
     </div>
     <div id="county-chart"></div>
     <div id="footer"></div>
@@ -46,14 +47,15 @@
 
 <div id="map"></div>
 <div class="leaflet-bottom leaflet-right"
-      style="padding-right: 15px; position:absolute; padding-bottom:20px;">
-            <input type="button" id="highway" value="Highway" onclick="highwayChange()" class="btnStyle span3 leaflet-control" />
-            <input type="button" id="Btn2" value="Parks" onclick="parksChange()" class="btnStyle span3 leaflet-control" />
-            <input type="button" id="Btn3" value="Btn3" onclick="" class="btnStyle span3 leaflet-control" />
+      style="position:absolute; background: gray; border-radius: 10px;">
+            <input type="button" id="highway" value="Highway" onclick="highwayChange()" class="btnStyle span3 leaflet-control" style = "width: 75px; margin-left: 10px; margin-top: 20px; margin-right: 10px"/>
+            <input type="button" id="Btn2" value="Parks" onclick="parksChange()" class="btnStyle span3 leaflet-control" style = "width: 75px; margin-left: 10px; margin-right: 10px" />
+            <input type="button" id="Btn3" value="Btn3" onclick="" class="btnStyle span3 leaflet-control" style = "width: 75px; margin-left: 10px;  margin-bottom: 10px; margin-right: 10px"/>
         </div>
    <script>
       // Create a map object.
 
+      //highway button
       var checkHighway = 0;
       function highwayChange(){
          if(checkHighway == 0){
@@ -68,6 +70,7 @@
       };
 
 
+      //park button
       var checkPark = 0;
       function parksChange(){
          if(checkPark == 0){
