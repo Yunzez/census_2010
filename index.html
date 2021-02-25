@@ -30,52 +30,56 @@
 <div id="info">
 
    <div id="title">
-      Washington counties guildlines
+      Washington counties general info
       <span><a href="https://twitter.com/UW" target="_blank"><i class="fa fa-twitter-square"></i></a></span>
       <span><a href="https://github.com/jakobzhao/geog458" target="_blank"><i class="fa fa-github-square"></i></a></span>
     </div>
-    <p id="placename">Washington State</p>
+    <!-- below are tab content -->
+    <div class="tab" style = "margin-top: 15px" >
+        <button class="tablinks" onclick="openSection(event, 'Race')">Race</button>
+        <button class="tablinks" onclick="openSection(event, 'Income')">Income</button>
+        <button class="tablinks" onclick="openSection(event, 'Age')">Age</button>
+      </div>
+
+      <div id="Race" class="tabcontent" style="display:block">
+        <p id="placename">Washington State</p>
+      </div>
+
+      <div id="Income" class="tabcontent">
+         <p id="placename">Washington State</p>
+      </div>
+
+      <div id="Age" class="tabcontent">
+         <p id="placename">Washington State</p>
+      </div>
     <div id="count" class="card">
       <!-- <h5 id="desc"> <iframe src="https://access.wa.gov/" style="height:400px;width:500px; border:none;" title="description"></h5> -->
       <h5 id="desc"> State of Washington </h5>
       <p id="county-count"></p>
     </div>
     <div id="county-chart"></div>
-    <div id="footer"></div>
+    <div id="footer">All the data above come from Washington Geospatial Open Data Portal</div>
 
 </div>
 
 <div id="map"></div>
    <script>
-      // Create a map object.
 
-      //highway button
-      // var checkHighway = 0;
-      // function highwayChange(){
-      //    if(checkHighway == 0){
-      //       checkHighway = checkHighway + 1;
-      //       highwaysLayer.addTo(mymap);
-      //       console.log(checkHighway);
-      //    }else if(checkHighway == 1){
-      //       console.log("remove!!!");
-      //       checkHighway = checkHighway - 1;
-      //       mymap.removeLayer(highwaysLayer);
-      //    }
-      // };
-      //
-      //
-      // //park button
-      // var checkPark = 0;
-      // function parksChange(){
-      //    if(checkPark == 0){
-      //       checkPark = checkPark + 1;
-      //       parksLayer.addTo(mymap);
-      //    }else if(checkPark == 1){
-      //       console.log("remove!!!");
-      //       checkPark = checkPark - 1;
-      //       mymap.removeLayer(parksLayer);
-      //    }
-      // };
+
+   function openSection(evt, sec) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(sec).style.display = "block";
+      evt.currentTarget.className += " active";
+      }
+
 
 
       var mymap = L.map('map', {
@@ -90,18 +94,73 @@
       var streets = L.tileLayer('http://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}@2x.png');
       var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}@2x');
 
-      countyLayer = null;
-      Promise.all([d3.json("assets/county_bound.geojson")]).then(function(datasets) {
+      counties = {};
+      data = null;
+      Promise.all([d3.json("assets/country_bound_data.geojson")]).then(function(datasets) {
          countyLayer = L.geoJSON(datasets[0], {
          onEachFeature: onEachFeature,
          style: {
            fillOpacity: 0.4,
            weight: 1,
-           opacity: 1,
+           opacity: 3,
            color: '#4E4C4C',
-           dashArray: '2'
          }
-        }).addTo(mymap);});
+        }).addTo(mymap);
+        //generate graph
+
+
+        function onEachFeature(feature, layer) {
+         layer.on({
+           mouseover: highlightFeature,
+           click: clickFeature,
+           mouseout: resetHighlight
+         });
+       }
+
+ //this function works when the mouse hovers over on a map feature.
+       function highlightFeature(e) {
+         // e indicates the current event
+         var feature = e.target; //the target capture the object which the event associates with
+         console.log("hover on ");
+         feature.setStyle({
+           weight: 2,
+           opacity: 0.8,
+           color: '#e3e3e3',
+           fillColor: '#00ffd9',
+           fillOpacity: 0.1
+         });
+       }
+
+
+
+       function clickFeature(e) {
+         L.DomEvent.stopPropagation(e);
+         countyname = e.target.feature.properties.JURISDIC_3;
+         population =  e.target.feature.properties.Census_County_2010_Total_AGE;
+         $("#placename").text(countyname);
+         $("#desc").text(countyname + "'s total population is " + population);
+         generateBar(countyname);
+
+       }
+
+       function resetHighlight(e) {
+         countyLayer.resetStyle(e.target);
+       }
+
+       // 6.6 bind the onMapClick function to the mymap object.
+       mymap.on('click', onMapClick);
+       // when click on any place on the map expect the counties layer, the text on the sidebar will be reset to the total number of WA.
+       function onMapClick(e) {
+         $("#placename").text("Washington");
+         $("#county-count").text("341");
+       }
+
+       datasets[0].features.forEach(function(d) {
+          counties[d.properties.JURISDIC_3] = [d.properties.Census_County_2010_White,
+             d.properties.Census_County_2010_AfricanAme, d.properties.Census_County_2010_AmericanIn,
+             d.properties.Census_County_2010_AsianAlone,  d.properties.Census_County_2010_SomeOtherR];
+      })
+     });
 
 
       new L.Control.Zoom({
@@ -120,7 +179,6 @@
          minZoom:6,
          attribution: 'Generated by Fred Zhao',
       });
-
 
 
       var baseLayers = {
@@ -142,65 +200,57 @@
 
 
 
-      // highwaysLayer = null;
-      // parksLayers = null;
-      // Promise.all([d3.json("assets/county_bound.geojson"), d3.json("assets/state_highway.geojson"), d3.json("assets/parks_recreational.geojson")]).then(function(datasets) {
-      //   countiesLayer = L.geoJSON(datasets[0], {
-      //    onEachFeature: onEachFeature,
-      //    style: style
-      //   }).addTo(mymap);
-      //   highwaysLayer = L.geoJSON(datasets[1], {style:
-      //      {fillOpacity: 0.6,
-      //      weight: 4,
-      //      opacity: 1,
-      //      color: '#ffffcc'}});
-      //   parksLayer = L.geoJSON(datasets[2]);
-      // });
-      //
-      // Promise.all([$.getJSON("assets/county_bound.geojson", "assets/state_highway.geojson", "assets/parks_recreational.geojson")]).then(function(datasets) {
-      // });
-      //boundaries = L.geoJson.ajax("assets/county_bound.geojson").addTo(mymap)
 
 
-      // below three functions changes maps tyle
-      function onEachFeature(feature, layer) {
-        layer.on({
-          mouseover: highlightFeature,
-          click: clickFeature,
-          mouseout: resetHighlight
-        });
+      function generateBar(countyname){
+         x = ["White", "Black", "Native", "Asian", "Other"];
+            x.reverse();
+           x.push("race");
+           x.reverse();
+
+           y = Object.values(counties[countyname]);
+           y.reverse();
+           y.push("#");
+           y.reverse();
+
+         bchart = c3.generate({
+           size: {
+             height: 350,
+             width: 400
+           },
+           data: {
+             x: 'race',
+             columns: [x, y], //input the x - race, y - the corresponding population.
+             type: 'bar', //a bar chart
+           },
+           axis: {
+             x: { //race
+               type: 'category',
+               tick: {
+                 rotate: -60,
+                 multiline: false
+               }
+             },
+             y: { //count
+                show: true,
+               tick: {
+               },
+             }
+           },
+           legend: {
+             show: false
+           },
+           bindto: "#county-chart" //bind the chart to the place holder element "county-chart".
+         });
+
+
       }
 
-// 6.3 this function works when the mouse hovers over on a map feature.
-      function highlightFeature(e) {
-        // e indicates the current event
-        var feature = e.target; //the target capture the object which the event associates with
-        console.log("hover on ");
-        feature.setStyle({
-          weight: 2,
-          opacity: 0.8,
-          color: '#e3e3e3',
-          fillColor: '#00ffd9',
-          fillOpacity: 0.1
-        });
-      }
 
-      function clickFeature(e) {
-        L.DomEvent.stopPropagation(e);
-        $("#placename").text(e.target.feature.properties.JURISDIC_3);
-      }
 
-      function resetHighlight(e) {
-        countyLayer.resetStyle(e.target);
-      }
 
-      // 6.6 bind the onMapClick function to the mymap object.
-      mymap.on('click', onMapClick);
-      // when click on any place on the map expect the counties layer, the text on the sidebar will be reset to the total number of WA.
-      function onMapClick(e) {
-        $("#placename").text("Washington");
-        $("#county-count").text("341");
-      }
+
+
 
 
 
