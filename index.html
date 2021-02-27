@@ -41,27 +41,27 @@
       </div>
 
       <div id="Race" class="tabcontent" >
-        <p id="placename_race">Washington State</p>
+        <p id="placename_race">Select a county on the mape</p>
         <div id="count" class="card">
-          <h5 id="desc_race"> State of Washington </h5>
+          <h5 id="desc_race"></h5>
           <p id="county-count"></p>
         </div>
         <div id="county-chart_race"></div>
       </div>
 
       <div id="Income" class="tabcontent" >
-         <p id="placename_income">Washington State</p>
+         <p id="placename_income">Select a county on the map</p>
          <div id="count" class="card">
-           <h5 id="desc_income"> State of Washington </h5>
+           <h5 id="desc_income"></h5>
            <p id="county-count"></p>
          </div>
          <div id="county-chart_income"></div>
       </div>
 
       <div id="Age" class="tabcontent" >
-         <p id="placename_age">Washington State</p>
+         <p id="placename_age">Select a county on the map</p>
          <div id="count" class="card">
-           <h5 id="desc_age"> State of Washington </h5>
+           <h5 id="desc_age"> </h5>
            <p id="county-count"></p>
          </div>
          <div id="county-chart_age"></div>
@@ -72,13 +72,20 @@
       <div id="count" class="card">
         <h5 id="desc_sum"> Here is the summary of all the counties information, click on a specific county with a tab to view more information about that county </h5>
         <p>You may refer to <a href="access.wa.gov">WA offical website</a> to learn more</p>
-        <p class = "section_name">Racial distribution</p>
-        <div id="county-chart_sum_race"></div>
       </div>
+
+      <p class = "section_name">Racial distribution</p>
+      <p id = "desc_subsum_race">Race description</p>
+      <div id="county-chart_sum_race"></div>
+
       <p class = "section_name">Median Income and Poverty Rate</p>
+      <p id = "desc_subsum_income">income description</p>
       <div id="county-chart_sum_income"></div>
+
       <p class = "section_name">Age distribution</p>
+      <p id = "desc_subsum_age">Age description</p>
       <div id="county-chart_sum_age"></div>
+
       <div id="footer">All the data above come from Washington Geospatial Open Data Portal</div>
 </div>
 
@@ -92,6 +99,8 @@
    <script>
 
    var section = "";
+
+   //open tab in the info panel
    function openSection(evt, sec) {
       section = sec;
       var i, tabcontent, tablinks
@@ -162,7 +171,7 @@
        }
 
 
-       summarydata = getSummaryDataset();
+       getSummaryDataset();
 
 
        function getSummaryDataset(){
@@ -173,7 +182,7 @@
 
           datasets[0].features.forEach(function(d) {
 
-            incomeSum[d.properties.JURISDIC_2] =  [Math.round((d.properties.Census_County_2010_PctPoverty + Number.EPSILON) * 100) / 10000,
+            incomeSum[d.properties.JURISDIC_2] =  [d.properties.Census_County_2010_PctPoverty,
               d.properties.Census_County_2010_Income];
             raceSum[d.properties.JURISDIC_2] = [d.properties.Census_County_2010_White,
                d.properties.Census_County_2010_AfricanAme, d.properties.Census_County_2010_AmericanIn,
@@ -203,48 +212,13 @@
        }
 
 
-       function clickFeature(e) {
-         if(section == "Race"){
-            L.DomEvent.stopPropagation(e);
-            countyname = e.target.feature.properties.JURISDIC_3;
-            population =  e.target.feature.properties.Census_County_2010_Total_AGE;
-            $("#placename_race").text("County Name: " + countyname);
-            $("#desc_race").text(countyname + "'s total population is " + population);
-            generateBar_race(countyname);
-         }else if(section == "Income"){
-            L.DomEvent.stopPropagation(e);
-            countyname = e.target.feature.properties.JURISDIC_3;
-            averageIncome =  e.target.feature.properties.Census_County_2010_Income;
-            $("#placename_income").text("County Name: " + countyname);
-            $("#desc_income").text(countyname + "'s median income is " + averageIncome);
-            generateBar_income(countyname);
-         }else if(section == "age"){
-            L.DomEvent.stopPropagation(e);
-            countyname = e.target.feature.properties.JURISDIC_3;
-            averageIncome =  e.target.feature.properties.Census_County_2010_Income;
-            $("#placename_income").text("County Name: " + countyname);
-            $("#desc_income").text(countyname + "'s median income is " + averageIncome);
-            generateBar_income(countyname);
-         }
-       }
 
        function resetHighlight(e) {
          countyLayer.resetStyle(e.target);
        }
 
        // 6.6 bind the onMapClick function to the mymap object.
-       mymap.on('click', onMapClick);
-       // when click on any place on the map expect the counties layer, the text on the sidebar will be reset to the total number of WA.
-       function onMapClick(e) {
-         $("#placename").text("Washington state");
-         $("#county-count").text("Please click a tab first, and then choose a county");
-         document.getElementById("main_panel").style.visibility = "visible";
-         document.getElementById("main_panel").style.height = "inherit";
-         tabcontent = document.getElementsByClassName("tabcontent");
-         tabcontent[0].style.display = "none";
-         tabcontent[1].style.display = "none";
-         tabcontent[2].style.display = "none";
-       }
+
 
        datasets[0].features.forEach(function(d) {
           counties[d.properties.JURISDIC_3] = [d.properties.Census_County_2010_White,
@@ -257,12 +231,81 @@
 
 
      function generateBar_race_sum(data){
-       console.log("in income");
+       console.log("in race");
+       summary = [0,0,0,0,0];
+       size = 0
+       for (var m in data){
+          size ++;
+          for (var i=0;i<data[m].length;i++){
+             summary[i] = summary[i] + data[m][i];
+         }
+       }
+
+       var chart = c3.generate({
+          data: {
+              // iris data from R
+              columns: [
+                  ['White', summary[0]],
+                  ['Black', summary[1]],
+                  ['Native', summary[2]],
+                  ['Asian', summary[3]],
+                  ['Other', summary[4]]
+              ],
+              type : 'pie'
+          },
+          legend: {
+               show: false
+          },
+          size: {
+              width: 500,
+              height: 400
+          },
+          label: {
+             format: function (value, ratio, id) {
+                return d3.format('$')(value);
+              }
+        },
+        bindto: "#county-chart_sum_race" //bind the chart to the place holder element "county-chart"
+      });
+      d3.select('#county-chart_sum_race').insert().selectAll('span')
+        .enter().append('span')
+          .attr('data-id', function (id) { return id; })
+          .html(function (id) { return id; })
+          .each(function (id) {
+              d3.select(this).style('background-color', chart.color(id));
+          })
+          .on('mouseover', function (id) {
+              chart.focus(id);
+          })
+          .on('mouseout', function (id) {
+              chart.revert();
+          })
+          .on('click', function (id) {
+              chart.toggle(id);
+          });
+
+
      }
 
 
      function generateBar_income_sum(data){
         console.log("in income");
+        summary = [0,0];
+        toptenPoor = generateBar_income();
+        size = 0
+        for (var m in data){
+           size ++;
+          summary[0] = summary[0] + data[m][0];
+          summary[1] = summary[1] + data[m][1];
+      }
+      poverty = summary[0]/size;
+      income_sum = summary[1]/size;
+
+      poverty = Math.round((poverty + Number.EPSILON) * 100) /100;
+      income_sum = Math.round((income_sum + Number.EPSILON) );
+      $("#desc_subsum_income").text("The overall poverty rate for WA is "+ poverty +
+                                    "% and the median income of " + income_sum + " dollars per year for each household");
+
      }
 
      function generateBar_age_sum(data){
@@ -324,6 +367,52 @@
      // 7.3 execute the sortJsObject function
 
 
+     mymap.on('click', onMapClick);
+     // when click on any place on the map expect the counties layer, the text on the sidebar will be reset to the total number of WA.
+     function onMapClick(e) {
+      $("#placename").text("Washington state");
+      // $("#county-count").text("Please click a tab first, and then choose a county");
+      document.getElementById("main_panel").style.visibility = "visible";
+      document.getElementById("main_panel").style.height = "inherit";
+      tabcontent = document.getElementsByClassName("tabcontent");
+      tabcontent[0].style.display = "none";
+      tabcontent[1].style.display = "none";
+      tabcontent[2].style.display = "none";
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      }
+
+
+      function clickFeature(e) {
+        if(section == "Race"){
+           L.DomEvent.stopPropagation(e);
+           countyname = e.target.feature.properties.JURISDIC_3;
+           population =  e.target.feature.properties.Census_County_2010_Total_AGE;
+           $("#placename_race").text("County Name: " + countyname);
+           $("#desc_race").text(countyname + "'s total population is " + population);
+           generateBar_race(countyname);
+        }else if(section == "Income"){
+           L.DomEvent.stopPropagation(e);
+           countyname = e.target.feature.properties.JURISDIC_3;
+           averageIncome =  e.target.feature.properties.Census_County_2010_Income;
+           $("#placename_income").text("County Name: " + countyname);
+           $("#desc_income").text(countyname + "'s median income is " + averageIncome);
+           generateBar_income();
+        }else if(section == "age"){
+           L.DomEvent.stopPropagation(e);
+           countyname = e.target.feature.properties.JURISDIC_3;
+           averageIncome =  e.target.feature.properties.Census_County_2010_Income;
+           $("#placename_income").text("County Name: " + countyname);
+           $("#desc_income").text(countyname + "'s median income is " + averageIncome);
+           generateBar_income(countyname);
+        }
+      }
 
       function generateBar_race(countyname){
          x = ["White", "Black", "Native", "Asian", "Other"];
@@ -414,6 +503,7 @@
              show: false
            },
            bindto: "#county-chart_income" //bind the chart to the place holder element "county-chart".
+
          });
       }
 

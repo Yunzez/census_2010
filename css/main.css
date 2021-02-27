@@ -62,11 +62,35 @@ visibility: hidden !important;
 }
 
 
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+   border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 
 #info{
    border-radius: 10px;
-   box-shadow: 5px 8px gray;
    visibility: visible;
+   overflow: auto;
+   box-shadow: 3px 0px #343a40;
 }
 
 
