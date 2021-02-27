@@ -108,6 +108,11 @@ visibility: hidden !important;
   padding-right: 10px
 }
 
+#info p{
+  font-size: 15px;
+  font-style: bold;
+}
+
 
 #title {
   font-size: 25px;
@@ -154,11 +159,11 @@ visibility: hidden !important;
 }
 
 text {
-  fill: gray
+  fill: white
 }
 
 .tick line {
-  stroke: gray;
+  stroke: grey;
 }
 
 .c3-axis path {

@@ -53,9 +53,9 @@
          <p id="placename_income">Select a county on the map</p>
          <div id="count" class="card">
            <h5 id="desc_income"></h5>
-           <p id="county-count"></p>
          </div>
          <div id="county-chart_income"></div>
+          <p id="chart_des_income"></p>
       </div>
 
       <div id="Age" class="tabcontent" >
@@ -107,6 +107,8 @@
       document.getElementById("main_panel").style.visibility = "hidden";
       document.getElementById("main_panel").style.height = 0;
       tabcontent = document.getElementsByClassName("tabcontent");
+       racesumchart.legend.hide();
+       agesumchart.legend.hide();
       for (i = 0; i < tabcontent.length; i++) {
       tabcontent[i].style.display = "none";
       }
@@ -230,7 +232,7 @@
 
 
 
-     function generateBar_race_sum(data){
+    function generateBar_race_sum(data){
        console.log("in race");
        summary = [0,0,0,0,0];
        size = 0
@@ -241,7 +243,7 @@
          }
        }
 
-       var chart = c3.generate({
+       racesumchart = c3.generate({
           data: {
               // iris data from R
               columns: [
@@ -254,11 +256,11 @@
               type : 'pie'
           },
           legend: {
-               show: false
+               show: true
           },
           size: {
               width: 500,
-              height: 400
+              height: 300
           },
           label: {
              format: function (value, ratio, id) {
@@ -267,28 +269,11 @@
         },
         bindto: "#county-chart_sum_race" //bind the chart to the place holder element "county-chart"
       });
-      d3.select('#county-chart_sum_race').insert().selectAll('span')
-        .enter().append('span')
-          .attr('data-id', function (id) { return id; })
-          .html(function (id) { return id; })
-          .each(function (id) {
-              d3.select(this).style('background-color', chart.color(id));
-          })
-          .on('mouseover', function (id) {
-              chart.focus(id);
-          })
-          .on('mouseout', function (id) {
-              chart.revert();
-          })
-          .on('click', function (id) {
-              chart.toggle(id);
-          });
-
-
      }
 
 
      function generateBar_income_sum(data){
+        //明天画图记得在tab 方程里隐藏
         console.log("in income");
         summary = [0,0];
         toptenPoor = generateBar_income();
@@ -310,6 +295,46 @@
 
      function generateBar_age_sum(data){
         console.log("in age");
+        summary = [0,0,0];
+         size = 0
+         for (var m in data){
+             size ++;
+             for (var i=0;i<data[m].length;i++){
+                summary[i] = summary[i] + data[m][i];
+            }
+         }
+         total_pop = summary[2];
+         age5_17 = summary[0];
+         age18_55 = summary[1];
+         age55_above = total_pop - age5_17 - age18_55;
+
+         agesumchart = c3.generate({
+           data: {
+                // iris data from R
+                columns: [
+                    ['0-18', summary[0]],
+                    ['18-55', summary[1]],
+                    ['55+', summary[2]]
+                ],
+                type : 'donut'
+           },
+           donut: {
+             title: "Census 2010"
+          },
+           legend: {
+                 show: true
+           },
+           size: {
+                width: 500,
+                height: 350
+           },
+           label: {
+               format: function (value, ratio, id) {
+                  return d3.format('$')(value);
+                }
+          },
+          bindto: "#county-chart_sum_age" //bind the chart to the place holder element "county-chart"
+        });
      }
 
 
@@ -371,6 +396,8 @@
      // when click on any place on the map expect the counties layer, the text on the sidebar will be reset to the total number of WA.
      function onMapClick(e) {
       $("#placename").text("Washington state");
+      racesumchart.legend.show();
+      agesumchart.legend.show();
       // $("#county-count").text("Please click a tab first, and then choose a county");
       document.getElementById("main_panel").style.visibility = "visible";
       document.getElementById("main_panel").style.height = "inherit";
@@ -397,20 +424,26 @@
            $("#placename_race").text("County Name: " + countyname);
            $("#desc_race").text(countyname + "'s total population is " + population);
            generateBar_race(countyname);
+
         }else if(section == "Income"){
            L.DomEvent.stopPropagation(e);
            countyname = e.target.feature.properties.JURISDIC_3;
            averageIncome =  e.target.feature.properties.Census_County_2010_Income;
            $("#placename_income").text("County Name: " + countyname);
-           $("#desc_income").text(countyname + "'s median income is " + averageIncome);
-           generateBar_income();
+           rank = generateBar_income(countyname);
+           $("#desc_income").text(countyname + "'s median income is " + averageIncome +
+                                 ", the poverty rate rank is " + rank + " in the washington state.");
+          $("#chart_des_income").text("The above graph shows 10 counties nearby " + countyname + " in the poverty rank" );
+
         }else if(section == "age"){
            L.DomEvent.stopPropagation(e);
            countyname = e.target.feature.properties.JURISDIC_3;
            averageIncome =  e.target.feature.properties.Census_County_2010_Income;
            $("#placename_income").text("County Name: " + countyname);
-           $("#desc_income").text(countyname + "'s median income is " + averageIncome);
-           generateBar_income(countyname);
+
+           $("#desc_income").text(countyname + "'s median income is " + averageIncome +
+                                 ", the poverty rate rank " + rank + "(From high to low) in the washington state.");
+
         }
       }
 
@@ -422,10 +455,10 @@
 
            y = Object.values(counties[countyname]);
            y.reverse();
-           y.push("#");
+           y.push("Population:");
            y.reverse();
 
-         bchart = c3.generate({
+         c3.generate({
            size: {
              height: 350,
              width: 400
@@ -457,14 +490,25 @@
       }
 
 
-      function generateBar_income(){
+      function generateBar_income(countyname){
          income_sorted = sortJsObject(income);
-         x = Object.keys(income_sorted).slice(0, 10);
+         count = 0;
+         rank = 0;
+         for (var m in income_sorted){
+            count++;
+             if(countyname == m + " County"){
+                rank = count;
+             }
+         }
+         if(rank <= 5 ){
+            rank = 5
+         }
+         x = Object.keys(income_sorted).slice(rank-5, rank+5);
             x.reverse();
            x.push("income");
            x.reverse();
 
-           y = Object.values(income_sorted).slice(0, 10);
+           y = Object.values(income_sorted).slice(rank-5, rank+5);
            y.reverse();
            y.push("poverty rate:");
            y.reverse();
@@ -491,8 +535,6 @@
              y: { //count
                 show: true,
                tick: {
-
-                  // format: d3.format("%")
                  format: function (d) {
                     return (Math.round((d + Number.EPSILON) * 100) + "%");;
                 }
@@ -503,8 +545,8 @@
              show: false
            },
            bindto: "#county-chart_income" //bind the chart to the place holder element "county-chart".
-
          });
+         return rank;
       }
 
 
