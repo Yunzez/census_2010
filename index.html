@@ -109,6 +109,9 @@
       tabcontent = document.getElementsByClassName("tabcontent");
        racesumchart.legend.hide();
        agesumchart.legend.hide();
+
+       $("#county-chart_income").text("");
+       console.log("opensection working");
       for (i = 0; i < tabcontent.length; i++) {
       tabcontent[i].style.display = "none";
       }
@@ -137,6 +140,7 @@
 
       counties = {};
       income = {};
+      age = {};
       data = null;
       Promise.all([d3.json("assets/country_bound_data.geojson")]).then(function(datasets) {
          countyLayer = L.geoJSON(datasets[0], {
@@ -190,22 +194,22 @@
                d.properties.Census_County_2010_AfricanAme, d.properties.Census_County_2010_AmericanIn,
                d.properties.Census_County_2010_AsianAlone,  d.properties.Census_County_2010_SomeOtherR];
             ageSum[d.properties.JURISDIC_2] = [d.properties.Census_County_2010_M_Under5+ d.properties.Census_County_2010_M_5to9
-                                                + d.properties.Census_County_2010_M_10to14+d.properties.Census_County_2010_M_15to17 +
-                                                d.properties.Census_County_2010_F_Under5+ d.properties.Census_County_2010_F_5to9
-                                                + d.properties.Census_County_2010_F_10to14+d.properties.Census_County_2010_F_15to17,
+                                             + d.properties.Census_County_2010_M_10to14+d.properties.Census_County_2010_M_15to17 +
+                                             d.properties.Census_County_2010_F_Under5+ d.properties.Census_County_2010_F_5to9
+                                             + d.properties.Census_County_2010_F_10to14+d.properties.Census_County_2010_F_15to17,
 
-                                                d.properties.Census_County_2010_M_18to19+ d.properties.Census_County_2010_M_20 +
-                                                d.properties.Census_County_2010_M_21 + d.properties.Census_County_2010_M_22to24 +
-                                                d.properties.Census_County_2010_M_25to29 + d.properties.Census_County_2010_M_30to34
-                                                + d.properties.Census_County_2010_M_35to39 + d.properties.Census_County_2010_M_40to44
-                                                + d.properties.Census_County_2010_M_45to49 + d.properties.Census_County_2010_M_50to54
-                                                +d.properties.Census_County_2010_F_18to19+ d.properties.Census_County_2010_F_20 +
-                                                d.properties.Census_County_2010_F_21 + d.properties.Census_County_2010_F_22to24 +
-                                                d.properties.Census_County_2010_F_25to29 + d.properties.Census_County_2010_F_30to34
-                                                + d.properties.Census_County_2010_F_35to39 + d.properties.Census_County_2010_F_40to44
-                                                + d.properties.Census_County_2010_F_45to49 + d.properties.Census_County_2010_F_50to54,
+                                             d.properties.Census_County_2010_M_18to19+ d.properties.Census_County_2010_M_20 +
+                                             d.properties.Census_County_2010_M_21 + d.properties.Census_County_2010_M_22to24 +
+                                             d.properties.Census_County_2010_M_25to29 + d.properties.Census_County_2010_M_30to34
+                                             + d.properties.Census_County_2010_M_35to39 + d.properties.Census_County_2010_M_40to44
+                                             + d.properties.Census_County_2010_M_45to49 + d.properties.Census_County_2010_M_50to54
+                                             +d.properties.Census_County_2010_F_18to19+ d.properties.Census_County_2010_F_20 +
+                                             d.properties.Census_County_2010_F_21 + d.properties.Census_County_2010_F_22to24 +
+                                             d.properties.Census_County_2010_F_25to29 + d.properties.Census_County_2010_F_30to34
+                                             + d.properties.Census_County_2010_F_35to39 + d.properties.Census_County_2010_F_40to44
+                                             + d.properties.Census_County_2010_F_45to49 + d.properties.Census_County_2010_F_50to54,
 
-                                                 d.properties.Census_County_2010_Total_AGE
+                                              d.properties.Census_County_2010_Total_AGE
                                              ];
          })
             generateBar_race_sum(raceSum);
@@ -227,6 +231,44 @@
              d.properties.Census_County_2010_AfricanAme, d.properties.Census_County_2010_AmericanIn,
              d.properties.Census_County_2010_AsianAlone,  d.properties.Census_County_2010_SomeOtherR];
          income[d.properties.JURISDIC_2] =  Math.round((d.properties.Census_County_2010_PctPoverty + Number.EPSILON) * 100) / 10000;
+         age[d.properties.JURISDIC_3] = [d.properties.Census_County_2010_M_Under5 + d.properties.Census_County_2010_F_Under5 +
+                                             d.properties.Census_County_2010_M_5to9 + d.properties.Census_County_2010_F_5to9,
+                                             //0-9
+
+                                             d.properties.Census_County_2010_M_10to14+ d.properties.Census_County_2010_F_10to14 +
+                                             d.properties.Census_County_2010_M_15to17 + d.properties.Census_County_2010_F_15to17,
+                                             //10-17
+
+                                             d.properties.Census_County_2010_M_18to19 + d.properties.Census_County_2010_F_18to19 +
+                                             d.properties.Census_County_2010_M_20 + d.properties.Census_County_2010_F_20 +
+                                             d.properties.Census_County_2010_M_21 + d.properties.Census_County_2010_F_21,
+                                             //18-21
+
+                                             d.properties.Census_County_2010_M_22to24 + d.properties.Census_County_2010_F_22to24 +
+                                             d.properties.Census_County_2010_M_25to29 + d.properties.Census_County_2010_F_25to29,
+                                             //22-29
+
+                                             d.properties.Census_County_2010_M_30to34 + d.properties.Census_County_2010_F_30to34+
+                                             d.properties.Census_County_2010_M_35to39 +  d.properties.Census_County_2010_F_35to39,
+                                             //30-39
+
+                                             d.properties.Census_County_2010_M_40to44 + d.properties.Census_County_2010_F_40to44+
+                                             d.properties.Census_County_2010_M_45to49 + d.properties.Census_County_2010_F_45to49,
+                                             //40-49
+
+                                             d.properties.Census_County_2010_M_50to54 + d.properties.Census_County_2010_F_50to54+
+                                             d.properties.Census_County_2010_M_55to59 + d.properties.Census_County_2010_F_55to59,
+                                             //50-59
+
+                                             d.properties.Census_County_2010_M_60to61+d.properties.Census_County_2010_M_62to64 +
+                                             d.properties.Census_County_2010_M_65to66+ d.properties.Census_County_2010_M_67to69 +
+                                             d.properties.Census_County_2010_M_70to74 + d.properties.Census_County_2010_F_60to61+
+                                             d.properties.Census_County_2010_F_62to64 + d.properties.Census_County_2010_F_65to66+
+                                             d.properties.Census_County_2010_F_67to69 + d.properties.Census_County_2010_F_70to74,
+                                             //60-74
+
+                                              d.properties.Census_County_2010_Total_AGE
+                                          ];
       })
      });
 
@@ -398,7 +440,6 @@
       $("#placename").text("Washington state");
       racesumchart.legend.show();
       agesumchart.legend.show();
-      // $("#county-count").text("Please click a tab first, and then choose a county");
       document.getElementById("main_panel").style.visibility = "visible";
       document.getElementById("main_panel").style.height = "inherit";
       tabcontent = document.getElementsByClassName("tabcontent");
@@ -426,23 +467,23 @@
            generateBar_race(countyname);
 
         }else if(section == "Income"){
+           console.log("in income");
            L.DomEvent.stopPropagation(e);
            countyname = e.target.feature.properties.JURISDIC_3;
-           averageIncome =  e.target.feature.properties.Census_County_2010_Income;
            $("#placename_income").text("County Name: " + countyname);
+           averageIncome =  e.target.feature.properties.Census_County_2010_Income;
            rank = generateBar_income(countyname);
            $("#desc_income").text(countyname + "'s median income is " + averageIncome +
                                  ", the poverty rate rank is " + rank + " in the washington state.");
           $("#chart_des_income").text("The above graph shows 10 counties nearby " + countyname + " in the poverty rank" );
 
-        }else if(section == "age"){
+       }else if(section == "Age"){
            L.DomEvent.stopPropagation(e);
            countyname = e.target.feature.properties.JURISDIC_3;
-           averageIncome =  e.target.feature.properties.Census_County_2010_Income;
-           $("#placename_income").text("County Name: " + countyname);
+           generateBar_age(countyname);
+           $("#placename_age").text("County Name: " + countyname);
 
-           $("#desc_income").text(countyname + "'s median income is " + averageIncome +
-                                 ", the poverty rate rank " + rank + "(From high to low) in the washington state.");
+           $("#desc_age").text("The graph abvoe shows the population of different age group, we can see the whole structure of the population age");
 
         }
       }
@@ -458,7 +499,7 @@
            y.push("Population:");
            y.reverse();
 
-         c3.generate({
+         chart = c3.generate({
            size: {
              height: 350,
              width: 400
@@ -500,6 +541,7 @@
                 rank = count;
              }
          }
+         originalrank = rank;
          if(rank <= 5 ){
             rank = 5
          }
@@ -546,33 +588,46 @@
            },
            bindto: "#county-chart_income" //bind the chart to the place holder element "county-chart".
          });
-         return rank;
+         return originalrank;
       }
 
-
-      function generateBar_age(){
-         income_sorted = sortJsObject(income);
-         x = Object.keys(income_sorted).slice(0, 10);
-            x.reverse();
-           x.push("income");
-           x.reverse();
-
-           y = Object.values(income_sorted).slice(0, 10);
-           y.reverse();
-           y.push("poverty rate:");
-           y.reverse();
+      summary = [];
+      age75_above = 0;
+      function generateBar_age(countyname){
+         console.log(countyname);
+         summary = age[countyname];
+         console.log(summary);
+         age75_above = summary[8] - summary[7]-summary[6]-summary[5]-summary[4]-summary[3]-summary[2]-summary[1]-summary[0] ;
 
          bchart = c3.generate({
            size: {
-             height: 351,
-             width: 400
+             height: 400,
+             width: 440
            },
            data: {
-             x: 'income',
-             columns: [x, y], //input the x - race, y - the corresponding population.
+
+             x: 'x',
+                    columns:
+                        [
+                      ['x', '"0-9"', "10-17","18-21" ,"22-29" ,"30-39" ,"40-49" ,"50-59","60-74","above 75" ],
+                      ['population', summary[0], summary[1], summary[2] ,summary[3] ,summary[4] ,summary[5] ,summary[6] ,summary[7] ,age75_above]
+                      ],
+             // columns: [
+             //     ["0-9", summary[0]],
+             //     ["10-17", summary[1]],
+             //     ["18-21", summary[2]],
+             //     ["22-29", summary[3]],
+             //     ["30-39", summary[4]],
+             //     ["40-49", summary[5]],
+             //     ["50-59", summary[6]],
+             //     ["60-74", summary[7]],
+             //     ["above 75",age75_above]
+             // ],
              type: 'bar', //a bar chart
            },
+
            axis: {
+             rotated :  true,
              x: { //race
                type: 'category',
                tick: {
@@ -583,21 +638,25 @@
              },
              y: { //count
                 show: true,
-               tick: {
 
-                  // format: d3.format("%")
-                 format: function (d) {
-                    return (Math.round((d + Number.EPSILON) * 100) + "%");;
-                }
+               tick: {
+                  rotate: -60
+
                },
-             }
+            },
+             label: {
+                format: function (value, ratio, id) {
+                   return d3.format('$')(value);
+                 }
+           },
            },
            legend: {
              show: false
            },
-           bindto: "#county-chart_income" //bind the chart to the place holder element "county-chart".
+           bindto: "#county-chart_age" //bind the chart to the place holder element "county-chart".
          });
       }
+
 
 
 
