@@ -85,6 +85,16 @@ visibility: hidden !important;
   background: #555;
 }
 
+#introgap{
+   background: white;
+   border-radius: 20px;
+   padding-left:5em;
+   font-size: 5px;
+}
+
+#introgap p{
+   font-size: 5px;
+}
 
 #info{
    border-radius: 10px;
@@ -137,6 +147,18 @@ visibility: hidden !important;
   color: lightgray;
   font-size: medium;
   font-weight: bold;
+}
+
+#placename_intro{
+   margin-top: 13px;
+   font-size: 25px;
+   font-size: bold;
+}
+
+#datasource{
+   background-color: gray;
+   border-radius: 10px;
+   padding: 5px;
 }
 
 #county-count {

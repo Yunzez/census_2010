@@ -35,18 +35,36 @@
     </div>
     <!-- below are tab content -->
     <div class="tab" style = "margin-top: 15px" >
+        <button class="tablinks" onclick="openSection(event, 'Intro')">Intro</button>
         <button class="tablinks" onclick="openSection(event, 'Race')">Race</button>
         <button class="tablinks" onclick="openSection(event, 'Income')">Income</button>
         <button class="tablinks" onclick="openSection(event, 'Age')">Age</button>
       </div>
 
+      <div id="Intro" class="tabcontent" >
+         <div id="placename_intro">Introduction of the project: </div>
+         <p >data source: </p>
+        <div id="count" class="card">
+           <a id = "datasource" href="https://geo.wa.gov/datasets/WSDOT::wsdot-alpaca-census-county-2010?geometry=-141.725%2C44.623%2C-99.911%2C49.839"> Census data WA 2010</a>
+          <h5 id="desc_intro">By selecting a section on the section tab, and select a county on the map to see the details of that specific section. By clicking outside the map to reenter the main info panel.</h5>
+          <div id="introgap"> <p> _________________________________________________</p> </div>
+          <h5 id="desc_intro">This data visualization is based on census data 2010 washington, the visualization is divided into three parts: race, income and age</h5>
+          <h5 id="desc_intro">The race section concludes the racial distribution of different counties, the race is divided in white, asian, black, native american, and other(including hispanic). The bar graph shows population based on races </h5>
+          <h5 id="desc_intro">The Income section shows the median family income for different counties, with its poverty rank, that is, the rank of poverty rate of the county among all counties in Washington state, from the highest to the lowest</h5>
+          <h5 id="desc_intro">The Age sections shows the age distribution of the county selected, the age is seperated in 9 subcatogory and it shows the age structure of the society of that county</h5>
+          <p> </br></br></br>by Yunze Zhao  赵云泽</p>
+          <p id="county-count"></p>
+        </div>
+      </div>
+
       <div id="Race" class="tabcontent" >
-        <p id="placename_race">Select a county on the mape</p>
+        <p id="placename_race">Select a county on the map</p>
         <div id="count" class="card">
           <h5 id="desc_race"></h5>
           <p id="county-count"></p>
         </div>
         <div id="county-chart_race"></div>
+        <p id="chart_des_race"></p>
       </div>
 
       <div id="Income" class="tabcontent" >
@@ -55,7 +73,9 @@
            <h5 id="desc_income"></h5>
          </div>
          <div id="county-chart_income"></div>
+          <div id="county-chart_income_median"></div>
           <p id="chart_des_income"></p>
+
       </div>
 
       <div id="Age" class="tabcontent" >
@@ -111,7 +131,6 @@
        agesumchart.legend.hide();
 
        $("#county-chart_income").text("");
-       console.log("opensection working");
       for (i = 0; i < tabcontent.length; i++) {
       tabcontent[i].style.display = "none";
       }
@@ -141,6 +160,7 @@
       counties = {};
       income = {};
       age = {};
+      medianincome = {};
       data = null;
       Promise.all([d3.json("assets/country_bound_data.geojson")]).then(function(datasets) {
          countyLayer = L.geoJSON(datasets[0], {
@@ -269,6 +289,7 @@
 
                                               d.properties.Census_County_2010_Total_AGE
                                           ];
+         medianincome[d.properties.JURISDIC_2] =  d.properties.Census_County_2010_Income;
       })
      });
 
@@ -459,12 +480,14 @@
 
       function clickFeature(e) {
         if(section == "Race"){
+           console.log("in race");
            L.DomEvent.stopPropagation(e);
            countyname = e.target.feature.properties.JURISDIC_3;
            population =  e.target.feature.properties.Census_County_2010_Total_AGE;
            $("#placename_race").text("County Name: " + countyname);
-           $("#desc_race").text(countyname + "'s total population is " + population);
+           $("#desc_race").text(countyname + "'s total population is " + population + "below shows its racial distribution");
            generateBar_race(countyname);
+
 
         }else if(section == "Income"){
            console.log("in income");
@@ -473,9 +496,10 @@
            $("#placename_income").text("County Name: " + countyname);
            averageIncome =  e.target.feature.properties.Census_County_2010_Income;
            rank = generateBar_income(countyname);
-           $("#desc_income").text(countyname + "'s median income is " + averageIncome +
-                                 ", the poverty rate rank is " + rank + " in the washington state.");
-          $("#chart_des_income").text("The above graph shows 10 counties nearby " + countyname + " in the poverty rank" );
+           rank_median = generateBar_income_median(countyname);
+          $("#chart_des_income").text("The above graph shows 10 counties nearby " + countyname + " in the poverty rank and median income rank, both from high to low" );
+          $("#desc_income").text(countyname + "'s median income is " + averageIncome +", the poverty rate rank is " + rank + " in the washington state (The lower the rank means it has the lower poverty rate), with a median income ranked " + rank_median + " in the washington state");
+
 
        }else if(section == "Age"){
            L.DomEvent.stopPropagation(e);
@@ -541,9 +565,15 @@
                 rank = count;
              }
          }
+         console.log("income rank" + rank);
          originalrank = rank;
+         valuechange = false;
          if(rank <= 5 ){
-            rank = 5
+            rank = 5;
+            valuechange = true;
+         }else if(rank >= 34 ){
+            rank = 34;
+            valuechange = true;
          }
          x = Object.keys(income_sorted).slice(rank-5, rank+5);
             x.reverse();
@@ -564,6 +594,112 @@
              x: 'income',
              columns: [x, y], //input the x - race, y - the corresponding population.
              type: 'bar', //a bar chart
+             color: function(inColor, data) {
+                    var colors = ['#FABF62', '#ACB6DD'];
+                    if(valuechange == false){
+                       if(data.index == 4) {
+                           return colors[1];
+                       }
+                    }else{
+                       if(originalrank>=34){
+                          colorindex = 10-(39-originalrank)-1;
+                          if(data.index == colorindex) {
+                             return colors[1];
+                         }
+                      }else{
+                        if(data.index == originalrank-1) {
+                           return colors[1];
+                       }
+                     }
+                    }
+                    return inColor;
+                }
+           },
+           axis: {
+             x: {
+               type: 'category',
+               tick: {
+                 rotate: -60,
+                 multiline: false
+
+               }
+             },
+             y: { //count
+                show: true,
+               tick: {
+                 format: function (d) {
+                    return (Math.round((d + Number.EPSILON) * 10000)/100 + "%");;
+                }
+               },
+             }
+           },
+           legend: {
+             show: false
+           },
+           bindto: "#county-chart_income" //bind the chart to the place holder element "county-chart".
+         });
+         return originalrank;
+      }
+
+
+      function generateBar_income_median(countyname){
+         median_income_sorted = sortJsObject(medianincome);
+         count = 0;
+         rank_median = 0;
+         for (var m in median_income_sorted){
+            count++;
+             if(countyname == m  + " County"){
+               rank_median = count;
+             }
+         }
+         valuechange = false;
+         originalrank_median = rank_median;
+         if(rank_median <= 5 ){
+            rank_median = 5
+            valuechange = true;
+         }else if(rank_median >= 34 ){
+            rank_median = 34
+            valuechange = true;
+         }
+         x = Object.keys(median_income_sorted ).slice(rank_median-5, rank_median+5);
+            x.reverse();
+           x.push("medianincome");
+           x.reverse();
+
+           y = Object.values(median_income_sorted ).slice(rank_median-5, rank_median+5);
+           y.reverse();
+           y.push("median income:");
+           y.reverse();
+
+         bchart = c3.generate({
+           size: {
+             height: 351,
+             width: 400
+           },
+           data: {
+             x: 'medianincome',
+             columns: [x, y], //input the x - race, y - the corresponding population.
+             type: 'bar', //a bar chart
+             color: function(inColor, data) {
+                    var colors = ['#FABF62', '#ACB6DD'];
+                    if(valuechange == false){
+                       if(data.index == 4) {
+                           return colors[1];
+                       }
+                    }else{
+                       if(originalrank_median>=34){
+                          colorindex = 10-(39-originalrank_median)-1;
+                          if(data.index == colorindex) {
+                             return colors[1];
+                         }
+                      }else{
+                        if(data.index == originalrank_median-1) {
+                           return colors[1];
+                       }
+                     }
+                    }
+                    return inColor;
+                }
            },
            axis: {
              x: { //race
@@ -578,7 +714,7 @@
                 show: true,
                tick: {
                  format: function (d) {
-                    return (Math.round((d + Number.EPSILON) * 100) + "%");;
+                    return (d + "$");
                 }
                },
              }
@@ -586,10 +722,13 @@
            legend: {
              show: false
            },
-           bindto: "#county-chart_income" //bind the chart to the place holder element "county-chart".
+           bindto: "#county-chart_income_median" //bind the chart to the place holder element "county-chart".
          });
-         return originalrank;
+         return originalrank_median;
       }
+
+
+
 
       summary = [];
       age75_above = 0;
