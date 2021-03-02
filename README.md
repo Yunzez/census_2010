@@ -1,8 +1,8 @@
-# **WA Census 2010 visualization**
+# **WA Census 2010 visualization:bar_chart:**
 ### by Fred Zhao
 -----
 
-## project description
+## project description:clipboard:
 **it is a project that visualized the results returned from the census 2010 for washington state, the data is provided by the WA government with tiles added in map as options. The project used smart dashboard to show the different info of each county. The smart dashboard is divided into three subsections**
 
 - race section shows the racial distribution of different counties, and it shows the specific number of the races and total population
@@ -19,15 +19,15 @@ Lastly, visit the project here:
 https://yunzez.github.io/census_2010_WA/
 ______
 
-## project goal
+## project goal:fishing_pole_and_fish:
 The project aims to help people who want to know about washington, and also for government officials or other policies maker to see whether or not there is a problem in the county.
 As an international student that is new to here, I wish this website could help other students like me to know more about washington state as well
 ______
-## Data sources
+## Data sources:book:
 https://geo.wa.gov/datasets/WSDOT::wsdot-alpaca-census-county-2010?geometry=-128.871%2C44.623%2C-112.765%2C49.839
 
 ______
-## Applied library
+## Applied library:memo:
 - c3
 - leaflet
 - d3
@@ -36,4 +36,13 @@ ______
 
 ______
 
+## More to know:black_nib:
+
+In the Washington Geospatial Open Data Portal, there are more census datasets. In the future this project may include other dataset for users to switch between to compare the differences.
+If you want to learn more about the census information, you can visit [Census Bureau](https://www.census.gov/)
+If you want to learn more about washington state, please refer to [WA home](https://access.wa.gov/).
+
+----
 ## Acknowledgement
+
+I'm grateful to GEOG458 class in Univeristy of Washington as well as its instructor Bo Zhao, and my TA Tyler McCrea as they enable to produce this project

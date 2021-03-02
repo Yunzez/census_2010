@@ -203,7 +203,7 @@ function generateBar_race_sum(data){
 
 
   function generateBar_income_sum(data){
-     //明天画图记得在tab 方程里隐藏
+     //画图记得在tab 方程里隐藏
      console.log("in income");
      summary = [0,0];
      toptenPoor = generateBar_income();
@@ -411,7 +411,7 @@ function generateBar_race_sum(data){
         countyname = e.target.feature.properties.JURISDIC_3;
         population =  e.target.feature.properties.Census_County_2010_Total_AGE;
         $("#placename_race").text("County Name: " + countyname);
-        $("#desc_race").text(countyname + "'s total population is " + population + "below shows its racial distribution");
+        $("#desc_race").text(countyname + "'s total population is " + population + ". below shows its racial distribution");
         generateBar_race(countyname);
 
 
