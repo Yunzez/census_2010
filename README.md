@@ -14,6 +14,9 @@
 There are also two tiles(a highway tile and a park viewing sites tiles are provided, audience can use these two layers to see are the park sites or highway related to income or population of the area. There are three types of basemap as well.
 
 Besides, once enter the website, there is main panel that offers general information about the station, the data source is also census 2010. It provides basic information like general income, poverty, racial distribution, and age groups of the whole State.
+
+Lastly, visit the project here:
+https://yunzez.github.io/census_2010/
 ______
 
 ## project goal
