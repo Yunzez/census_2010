@@ -139,7 +139,8 @@ function openSection(evt, sec) {
       })
          generateBar_race_sum(raceSum);
          generateBar_income_sum(incomeSum);
-         generateBar_age_sum(age);
+         generateBar_age_sum(age, "donut", "#county-chart_sum_age");
+
     }
 
 
@@ -276,7 +277,7 @@ function generateBar_race_sum(data){
 
   }
 
-  function generateBar_age_sum(data){
+  function generateBar_age_sum(data, type, place){
      console.log("in age");
      summary = [0,0,0,0,0,0,0,0,0];
 
@@ -304,7 +305,7 @@ function generateBar_race_sum(data){
                    ["60-74", summary[7]],
                    ["above 75",age75_above]
              ],
-             type : 'donut'
+             type : type
         },
         donut: {
           title: "Census 2010"
@@ -321,7 +322,7 @@ function generateBar_race_sum(data){
                return d3.format('$')(value);
              }
        },
-       bindto: "#county-chart_sum_age" //bind the chart to the place holder element "county-chart"
+       bindto:  place //bind the chart to the place holder element "county-chart"
      });
   }
 

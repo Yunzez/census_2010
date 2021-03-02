@@ -16,7 +16,7 @@ There are also two tiles(a highway tile and a park viewing sites tiles are provi
 Besides, once enter the website, there is main panel that offers general information about the station, the data source is also census 2010. It provides basic information like general income, poverty, racial distribution, and age groups of the whole State.
 
 Lastly, visit the project here:
-https://yunzez.github.io/census_2010/
+https://yunzez.github.io/census_2010_WA/
 ______
 
 ## project goal
